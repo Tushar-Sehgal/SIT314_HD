@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bus Information Dashboard</title>
+
+  <!-- Update the Firebase version to the latest as needed -->
+  <script defer src="/__/firebase/10.12.1/firebase-app-compat.js"></script>
+  <script defer src="/__/firebase/10.12.1/firebase-database-compat.js"></script>
+  <script defer src="/__/firebase/init.js"></script>
+
+  <style>
+    body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+    header { background: #039be5; color: white; padding: 20px; text-align: center; }
+    #bus-data-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
+    .bus-data { background-color: #fff; border: 1px solid #ddd; border-radius: 5px; margin: 10px; padding: 20px; width: 300px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+    .bus-data h2 { margin-top: 0; }
+    .bus-data p { margin: 5px 0; }
+    .icon { width: 24px; height: 24px; vertical-align: middle; margin-right: 5px; }
+    .data-container { display: flex; align-items: center; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bus Information Dashboard</h1>
+  </header>
+  <div id="bus-data-container">
+    <!-- Bus data will be dynamically added here -->
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Document loaded");
+
+      try {
+        let app = firebase.app();
+        console.log("Firebase SDK loaded and initialized");
+
+        function fetchBusData() {
+          console.log("Fetching bus data from Firebase...");
+          firebase.database().ref('bus_data').once('value').then(function(snapshot) {
+            console.log("Data fetched from Firebase:", snapshot.val());
+            const busDataContainer = document.getElementById('bus-data-container');
+            busDataContainer.innerHTML = ''; // Clear previous data
+            snapshot.forEach(function(childSnapshot) {
+              const busId = childSnapshot.key;
+              const data = childSnapshot.val();
+              const busDataDiv = document.createElement('div');
+              busDataDiv.classList.add('bus-data');
+              busDataDiv.innerHTML = `
+                <h2>Bus ID: ${busId}</h2>
+                <div class="data-container"><img src="https://img.icons8.com/ios-filled/50/000000/walking--v2.png" class="icon"><p><strong>Enter Count:</strong> ${data.enter_count}</p></div>
+                <div class="data-container"><img src="https://img.icons8.com/ios-filled/50/000000/error.png" class="icon"><p><strong>Offenders:</strong> ${data.offenders}</p></div>
+                <div class="data-container"><img src="https://img.icons8.com/ios-filled/50/000000/rfid-signal.png" class="icon"><p><strong>Myki Taps:</strong> ${data.myki_taps}</p></div>
+                <div class="data-container"><img src="https://img.icons8.com/ios-filled/50/000000/clock.png" class="icon"><p><strong>Last Updated:</strong> ${data.last_updated}</p></div>
+              `;
+              busDataContainer.appendChild(busDataDiv);
+            });
+          }).catch(function(error) {
+            console.error("Error fetching data from Firebase: ", error);
+          });
+        }
+
+        // Fetch bus data on page load
+        fetchBusData();
+
+      } catch (e) {
+        console.error("Error loading Firebase SDK: ", e);
+      }
+    });
+  </script>
+</body>
+</html>
